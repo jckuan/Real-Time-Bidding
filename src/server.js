@@ -45,24 +45,44 @@ app.get('/api/v1', (req, res) => {
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const adminRoutes = require('./routes/admin');
+const bidRoutes = require('./routes/bids');
 
 // Use routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/admin', adminRoutes);
-// TODO: app.use('/api/v1/bids', bidRoutes); // Will be added in Phase 3
+app.use('/api/v1/bids', bidRoutes);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
   logger.info('New WebSocket connection', { socketId: socket.id });
+
+  // Subscribe to product leaderboard
+  socket.on('subscribe_leaderboard', (productId) => {
+    const room = `leaderboard:${productId}`;
+    socket.join(room);
+    logger.info('User subscribed to leaderboard', { socketId: socket.id, productId, room });
+    
+    socket.emit('subscribed', { productId, room });
+  });
+
+  // Unsubscribe from product leaderboard
+  socket.on('unsubscribe_leaderboard', (productId) => {
+    const room = `leaderboard:${productId}`;
+    socket.leave(room);
+    logger.info('User unsubscribed from leaderboard', { socketId: socket.id, productId, room });
+    
+    socket.emit('unsubscribed', { productId, room });
+  });
 
   socket.on('disconnect', () => {
     logger.info('WebSocket disconnected', { socketId: socket.id });
   });
 });
 
-// Make io available to routes
+// Make io available to routes and services
 app.set('io', io);
+global.io = io; // Also make it globally accessible
 
 // 404 handler
 app.use((req, res) => {

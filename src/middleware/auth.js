@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 const config = require('../../config');
 const AppError = require('../utils/AppError');
 
-const authMiddleware = async (req, res, next) => {
+/**
+ * Required authentication middleware
+ */
+const authenticate = async (req, res, next) => {
   try {
     // Get token from header
     const authHeader = req.headers.authorization;
@@ -34,4 +37,37 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+/**
+ * Optional authentication middleware
+ * Doesn't fail if no token is provided
+ */
+const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // No token, but continue without user
+      return next();
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    try {
+      const decoded = jwt.verify(token, config.jwt.secret);
+      req.user = {
+        id: decoded.id,
+        email: decoded.email
+      };
+    } catch (err) {
+      // Invalid token, continue without user
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = authenticate;
+module.exports.authenticate = authenticate;
+module.exports.optionalAuth = optionalAuth;
