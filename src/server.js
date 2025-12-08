@@ -4,10 +4,13 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 
 const config = require('../config');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
+const broadcastService = require('./services/broadcastService');
+const productStatusJob = require('./jobs/productStatusJob');
 
 // Import database connections
 require('./database/postgres');
@@ -25,7 +28,18 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://cdn.socket.io"],
+      connectSrc: ["'self'", "ws:", "wss:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "data:"],
+    },
+  },
+}));
 app.use(cors({ origin: config.app.corsOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -35,6 +49,9 @@ app.use(morgan('combined', { stream: { write: message => logger.info(message.tri
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // API routes
 app.get('/api/v1', (req, res) => {
@@ -62,6 +79,9 @@ io.on('connection', (socket) => {
     const room = `leaderboard:${productId}`;
     socket.join(room);
     logger.info('User subscribed to leaderboard', { socketId: socket.id, productId, room });
+    
+    // Start periodic broadcast for this product
+    broadcastService.startBroadcast(productId, io);
     
     socket.emit('subscribed', { productId, room });
   });
@@ -96,11 +116,26 @@ app.use(errorHandler);
 const PORT = config.app.port;
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT} in ${config.app.env} mode`);
+  
+  // Start background jobs
+  productStatusJob.start();
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
+  productStatusJob.stop();
+  broadcastService.stopAllBroadcasts();
+  server.close(() => {
+    logger.info('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  productStatusJob.stop();
+  broadcastService.stopAllBroadcasts();
   server.close(() => {
     logger.info('Server closed');
     process.exit(0);

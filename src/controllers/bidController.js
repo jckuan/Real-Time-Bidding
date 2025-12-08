@@ -63,7 +63,11 @@ exports.getMyBidStatus = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: status
+      data: {
+        productId: parseInt(productId),
+        hasBid: status !== null,
+        bid: status
+      }
     });
   } catch (error) {
     next(error);

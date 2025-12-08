@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Real-Time Bidding</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background: #f5f5f5;">
+  <header class="header">
+    <div class="header-content">
+      <h1>🔥 Real-Time Bidding</h1>
+      <div class="user-info">
+        <span id="userEmail"></span>
+        <span class="badge" id="memberWeight"></span>
+        <button class="btn btn-secondary" id="logoutBtn" style="width: auto; padding: 10px 20px;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 id="productsTitle">Active Flash Sales</h2>
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="active">Active</button>
+        <button class="filter-tab" data-filter="completed">Past Sales</button>
+      </div>
+    </div>
+    <div id="productList" class="product-grid">
+      <div class="loading">Loading products...</div>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
