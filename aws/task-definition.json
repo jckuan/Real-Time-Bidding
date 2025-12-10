@@ -1,0 +1,101 @@
+{
+  "family": "rtb-app",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::746581495218:role/RTB-ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::746581495218:role/RTB-ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "rtb-app",
+      "image": "746581495218.dkr.ecr.us-west-2.amazonaws.com/rtb-app:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "PORT",
+          "value": "3000"
+        },
+        {
+          "name": "DB_HOST",
+          "value": "rtb-db.cxs8mgm8ufcp.us-west-2.rds.amazonaws.com"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "rtb_database"
+        },
+        {
+          "name": "REDIS_HOST",
+          "value": "rtb-redis.laocea.0001.usw2.cache.amazonaws.com"
+        },
+        {
+          "name": "REDIS_PORT",
+          "value": "6379"
+        },
+        {
+          "name": "DEFAULT_ALPHA",
+          "value": "1.0"
+        },
+        {
+          "name": "DEFAULT_BETA",
+          "value": "100.0"
+        },
+        {
+          "name": "DEFAULT_GAMMA",
+          "value": "50.0"
+        },
+        {
+          "name": "RATE_LIMIT_WINDOW",
+          "value": "60000"
+        },
+        {
+          "name": "RATE_LIMIT_MAX_REQUESTS",
+          "value": "100"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_USER",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:746581495218:secret:rtb/db/username-RLFED2"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:746581495218:secret:rtb/db/password-lnR4Vu"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:746581495218:secret:rtb/jwt/secret-1ruGX2"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/rtb-app",
+          "awslogs-region": "us-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
