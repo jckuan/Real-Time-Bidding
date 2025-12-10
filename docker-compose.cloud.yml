@@ -1,23 +1,23 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: rtb-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: rtb_user
-      POSTGRES_PASSWORD: rtb_password
-      POSTGRES_DB: rtb_database
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rtb_user -d rtb_database"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # PostgreSQL Database - DISABLED (using local PostgreSQL)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: rtb-postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: rtb_user
+  #     POSTGRES_PASSWORD: rtb_password
+  #     POSTGRES_DB: rtb_database
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./migrations:/docker-entrypoint-initdb.d
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U rtb_user -d rtb_database"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   # Redis Cache
   redis:
@@ -43,19 +43,17 @@ services:
     container_name: rtb-app
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       NODE_ENV: development
       PORT: 3000
       
-      # Database
-      DB_HOST: postgres
+      # Database (using host's local PostgreSQL)
+      DB_HOST: host.docker.internal
       DB_PORT: 5432
-      DB_USER: rtb_user
-      DB_PASSWORD: rtb_password
+      DB_USER: postgres
+      DB_PASSWORD: postgres
       DB_NAME: rtb_database
       DB_POOL_MIN: 2
       DB_POOL_MAX: 10

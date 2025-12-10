@@ -172,9 +172,11 @@ class ProductService {
   async getAllScoringParameters() {
     try {
       const result = await query(
-        `SELECT * FROM scoring_parameters 
-         WHERE is_active = true 
-         ORDER BY product_id NULLS FIRST`,
+        `SELECT sp.*, p.name as product_name 
+         FROM scoring_parameters sp
+         LEFT JOIN products p ON sp.product_id = p.id
+         WHERE sp.is_active = true 
+         ORDER BY sp.product_id NULLS FIRST`,
         []
       );
 

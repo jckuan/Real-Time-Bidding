@@ -310,10 +310,9 @@ function displayScoringParameters(params) {
   const currentParamsDiv = document.getElementById('currentParams');
   
   const html = params.map((param, index) => `
-    <div style="${index > 0 ? 'margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0;' : ''}">
+    <div style="${index > 0 ? 'margin-top: 10px;' : ''}">
       <h3 style="margin: 0 0 15px 0;">
         ${param.product_name || (param.product_id ? `Product #${param.product_id}` : 'Global Default')}
-        ${param.is_active ? '<span class="badge badge-success" style="margin-left: 10px; font-size: 12px;">Active</span>' : ''}
       </h3>
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
         <div>
