@@ -1,6 +1,4 @@
 // Admin Dashboard JavaScript
-const API_BASE = window.API_CONFIG?.BASE_URL || 'http://localhost:3000/api/v1';
-
 let authToken = null;
 
 // Initialize
@@ -67,7 +65,7 @@ async function handleCreateProduct(e) {
   };
 
   try {
-    const response = await fetch(`${API_BASE}/admin/products`, {
+    const response = await fetch(`${API_BASE_URL}/admin/products`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +97,7 @@ async function handleCreateProduct(e) {
 // Activate Product
 async function activateProduct(productId) {
   try {
-    const response = await fetch(`${API_BASE}/admin/products/${productId}/activate`, {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/activate`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`
@@ -124,7 +122,7 @@ async function endProduct(productId) {
   if (!confirm('Are you sure you want to end this sale?')) return;
   
   try {
-    const response = await fetch(`${API_BASE}/admin/products/${productId}/end`, {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/end`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`
@@ -147,7 +145,7 @@ async function endProduct(productId) {
 // Load Products
 async function loadProducts() {
   try {
-    const response = await fetch(`${API_BASE}/products`, {
+    const response = await fetch(`${API_BASE_URL}/products`, {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
@@ -261,7 +259,7 @@ async function handleProductSelect(e) {
 async function loadScoringParameters() {
   try {
     // Fetch all scoring parameters
-    const response = await fetch(`${API_BASE}/admin/scoring-parameters`, {
+    const response = await fetch(`${API_BASE_URL}/admin/scoring-parameters`, {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
@@ -355,7 +353,7 @@ async function handleUpdateScoring(e) {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/admin/products/${productId}/scoring`, {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/scoring`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

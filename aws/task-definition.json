@@ -65,6 +65,10 @@
         {
           "name": "RATE_LIMIT_MAX_REQUESTS",
           "value": "100"
+        },
+        {
+          "name": "CORS_ORIGIN",
+          "value": "*"
         }
       ],
       "secrets": [

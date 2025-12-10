@@ -40,7 +40,16 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors({ origin: config.app.corsOrigin }));
+
+// CORS configuration - allow all origins for file:// protocol and development
+const corsOptions = {
+  origin: '*',  // Allow all origins including file://
+  credentials: false,  // Must be false when origin is *
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) }}));

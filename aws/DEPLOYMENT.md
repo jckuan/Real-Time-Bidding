@@ -116,7 +116,7 @@ aws rds create-db-instance \
     --engine postgres \
     --engine-version 15.8 \
     --master-username rtbadmin \
-    --master-user-password 'YourStrongPassword123!' \
+    --master-user-password 'CHANGE_ME_STRONG_PASSWORD' \
     --allocated-storage 20 \
     --storage-type gp3 \
     --db-name rtb_database \

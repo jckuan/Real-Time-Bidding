@@ -2,7 +2,18 @@
 
 ## Critical Fixes (Required)
 
-### 1. Security Group Rules ⚠️ **CRITICAL**
+### 1. PostgreSQL SSL Connection ⚠️ **CRITICAL**
+**Problem**: RDS requires SSL connections, app was connecting without encryption  
+**Error**: `no pg_hba.conf entry for host "x.x.x.x", user "rtbadmin", database "rtb_database", no encryption`  
+**Fix**: Updated `src/database/postgres.js` to enable SSL in production:
+
+```javascript
+ssl: process.env.NODE_ENV === 'production' ? {
+  rejectUnauthorized: false // AWS RDS uses self-signed certificates
+} : false
+```
+
+### 2. Security Group Rules ⚠️ **CRITICAL**
 **Problem**: Security group missing essential inbound rules  
 **Fixes Applied**:
 
@@ -68,7 +79,8 @@ Applied but probably not needed if VPC endpoints working:
 - Port 80 from 0.0.0.0/0 (internet → ALB)
 - Port 443 from sg-0f45b30eeb2ea2d09 (ECS tasks → VPC endpoints)
 - Port 3000 from sg-0f45b30eeb2ea2d09 (ALB → ECS tasks)
-- Port 5432 from bastion (for database migrations)
+- Port 5432 from sg-0f45b30eeb2ea2d09 (ECS tasks → RDS)
+- Port 6379 from sg-0f45b30eeb2ea2d09 (ECS tasks → Redis)
 
 **Outbound Rules:**
 - All traffic to 0.0.0.0/0

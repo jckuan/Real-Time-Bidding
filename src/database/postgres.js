@@ -12,6 +12,10 @@ const pool = new Pool({
   max: config.database.poolMax,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  // Enable SSL for AWS RDS (required for production)
+  ssl: process.env.NODE_ENV === 'production' ? {
+    rejectUnauthorized: false // AWS RDS uses self-signed certificates
+  } : false
 });
 
 // Test connection on startup

@@ -45,6 +45,26 @@ aws ec2 authorize-security-group-ingress \
     --source-group $SG_ID \
     --region $AWS_REGION 2>&1 | grep -v "already exists" || echo "  ✓ Port 3000 configured"
 
+# 4. Port 5432 - ECS tasks to RDS PostgreSQL
+echo ""
+echo "4. Adding port 5432 for ECS tasks → RDS..."
+aws ec2 authorize-security-group-ingress \
+    --group-id $SG_ID \
+    --protocol tcp \
+    --port 5432 \
+    --source-group $SG_ID \
+    --region $AWS_REGION 2>&1 | grep -v "already exists" || echo "  ✓ Port 5432 configured"
+
+# 5. Port 6379 - ECS tasks to ElastiCache Redis
+echo ""
+echo "5. Adding port 6379 for ECS tasks → Redis..."
+aws ec2 authorize-security-group-ingress \
+    --group-id $SG_ID \
+    --protocol tcp \
+    --port 6379 \
+    --source-group $SG_ID \
+    --region $AWS_REGION 2>&1 | grep -v "already exists" || echo "  ✓ Port 6379 configured"
+
 echo ""
 echo "✓ Security group configuration complete"
 echo ""
