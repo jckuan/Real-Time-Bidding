@@ -89,6 +89,20 @@ class AdminController {
       next(error);
     }
   }
+
+  // GET /api/v1/admin/scoring-parameters
+  async getScoringParameters(req, res, next) {
+    try {
+      const parameters = await productService.getAllScoringParameters();
+
+      res.status(200).json({
+        success: true,
+        data: parameters
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AdminController();

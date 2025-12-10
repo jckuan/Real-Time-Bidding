@@ -9,7 +9,7 @@ const orderService = require('../services/orderService');
 class ProductStatusJob {
   constructor() {
     this.intervalId = null;
-    this.checkInterval = 10000; // Check every 10 seconds
+    this.checkInterval = 30000; // Check every 30 seconds
   }
 
   /**

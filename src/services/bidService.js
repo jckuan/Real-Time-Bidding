@@ -5,6 +5,32 @@ const logger = require('../utils/logger');
 const AppError = require('../utils/AppError');
 
 class BidService {
+  constructor() {
+    this.RATE_LIMIT_WINDOW = 2; // seconds between updates
+  }
+
+  /**
+   * Check rate limit for bid updates
+   * @param {number} userId 
+   * @param {number} productId 
+   * @throws {AppError} if rate limit exceeded
+   */
+  async checkRateLimit(userId, productId) {
+    const key = `bid_rate_limit:${userId}:${productId}`;
+    const lastUpdate = await redisClient.get(key);
+    
+    if (lastUpdate) {
+      const timeSinceLastUpdate = (Date.now() - parseInt(lastUpdate)) / 1000;
+      if (timeSinceLastUpdate < this.RATE_LIMIT_WINDOW) {
+        const waitTime = (this.RATE_LIMIT_WINDOW - timeSinceLastUpdate).toFixed(1);
+        throw new AppError(`Please wait ${waitTime} seconds before updating your bid again`, 429);
+      }
+    }
+    
+    // Set the rate limit key (expires after RATE_LIMIT_WINDOW seconds)
+    await redisClient.setEx(key, this.RATE_LIMIT_WINDOW, Date.now().toString());
+  }
+
   /**
    * Submit a new bid
    * 
@@ -118,6 +144,9 @@ class BidService {
    */
   async updateBid(updateData) {
     const { userId, productId, newBidPrice } = updateData;
+
+    // 0. Check rate limit
+    await this.checkRateLimit(userId, productId);
 
     // 1. Get product and validate
     const product = await this.getProductForBidding(productId);

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { query } = require('../database/postgres');
 const config = require('../../config');
 const AppError = require('../utils/AppError');
 
@@ -19,10 +20,21 @@ const authenticate = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, config.jwt.secret);
     
+    // Fetch user role from database
+    const result = await query(
+      'SELECT id, email, role FROM users WHERE id = $1 AND is_active = true',
+      [decoded.id]
+    );
+
+    if (result.rows.length === 0) {
+      return next(new AppError('User not found', 401));
+    }
+
     // Attach user info to request
     req.user = {
-      id: decoded.id,
-      email: decoded.email
+      id: result.rows[0].id,
+      email: result.rows[0].email,
+      role: result.rows[0].role
     };
 
     next();

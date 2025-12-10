@@ -47,9 +47,13 @@ loginForm.addEventListener('submit', async (e) => {
       
       showSuccess('Login successful! Redirecting...');
       
-      // Redirect to dashboard
+      // Redirect based on user role
       setTimeout(() => {
-        window.location.href = 'dashboard.html';
+        if (data.data.user.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
       }, 1000);
     } else {
       showError(data.error?.message || 'Login failed');

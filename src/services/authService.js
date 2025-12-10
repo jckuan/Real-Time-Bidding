@@ -39,10 +39,10 @@ class AuthService {
 
       // Insert user
       const result = await query(
-        `INSERT INTO users (email, password_hash, username, member_weight) 
-         VALUES ($1, $2, $3, $4) 
-         RETURNING id, email, username, member_weight, created_at`,
-        [email, passwordHash, username, memberWeight]
+        `INSERT INTO users (email, password_hash, username, member_weight, role)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, email, username, member_weight, role, created_at`,
+        [email, passwordHash, username, memberWeight, 'user']
       );
 
       const user = result.rows[0];
@@ -56,6 +56,7 @@ class AuthService {
           email: user.email,
           username: user.username,
           member_weight: parseFloat(user.member_weight),
+          role: user.role,
           created_at: user.created_at
         },
         token
@@ -72,7 +73,7 @@ class AuthService {
     try {
       // Find user
       const result = await query(
-        'SELECT id, email, username, password_hash, member_weight FROM users WHERE email = $1 AND is_active = true',
+        'SELECT id, email, username, password_hash, member_weight, role FROM users WHERE email = $1 AND is_active = true',
         [email]
       );
 
@@ -104,7 +105,8 @@ class AuthService {
           id: user.id,
           email: user.email,
           username: user.username,
-          member_weight: parseFloat(user.member_weight)
+          member_weight: parseFloat(user.member_weight),
+          role: user.role
         },
         token
       };

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Real-Time Bidding</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background: #f5f5f5;">
+  <header class="header">
+    <div class="header-content">
+      <h1>⚙️ Admin Dashboard</h1>
+      <div class="user-info">
+        <span id="userEmail"></span>
+        <span class="badge">Admin</span>
+        <button class="btn btn-secondary" id="logoutBtn" style="width: auto; padding: 10px 20px;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Tabs -->
+    <div class="filter-tabs" style="margin-bottom: 30px;">
+      <button class="filter-tab active" data-tab="products">Manage Products</button>
+      <button class="filter-tab" data-tab="scoring">Scoring Parameters</button>
+    </div>
+
+    <!-- Products Tab -->
+    <div id="productsTab" class="tab-content active">
+      <div class="card" style="margin-bottom: 30px;">
+        <h2 style="margin-bottom: 20px;">Create New Product</h2>
+        <form id="createProductForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="productName">Product Name *</label>
+              <input type="text" id="productName" required>
+            </div>
+            <div class="form-group">
+              <label for="productDescription">Description</label>
+              <textarea id="productDescription" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="basePrice">Base Price (底價) *</label>
+              <input type="number" id="basePrice" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="initialInventory">Initial Inventory (庫存量 K) *</label>
+              <input type="number" id="initialInventory" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="maxWinners">Max Winners (得標人數) *</label>
+              <input type="number" id="maxWinners" min="1" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="saleStartTime">Sale Start Time *</label>
+              <input type="datetime-local" id="saleStartTime" required>
+            </div>
+            <div class="form-group">
+              <label for="saleEndTime">Sale End Time *</label>
+              <input type="datetime-local" id="saleEndTime" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Create Product</button>
+        </form>
+      </div>
+
+      <!-- Products List -->
+      <div class="card">
+        <h2 style="margin-top: 0; margin-bottom: 20px;">Existing Products</h2>
+        <div id="productsList">
+          <div class="loading">Loading products...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scoring Parameters Tab -->
+    <div id="scoringTab" class="tab-content">
+      <div class="card" style="margin-bottom: 30px;">
+        <h2 style="margin-bottom: 20px;">Update Scoring Parameters</h2>
+        <p class="info-text">Formula: Score = α·P + β/(T+1) + γ·W</p>
+        
+        <form id="updateScoringForm">
+          <div class="form-group">
+            <label for="productSelect">Select Product *</label>
+            <select id="productSelect" required>
+              <option value="">-- Choose a product --</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="alpha">α (Price Weight)</label>
+              <input type="number" id="alpha" step="0.01" min="0" placeholder="e.g., 1.0" required>
+            </div>
+            <div class="form-group">
+              <label for="beta">β (Time Weight)</label>
+              <input type="number" id="beta" step="0.01" min="0" placeholder="e.g., 100.0" required>
+            </div>
+            <div class="form-group">
+              <label for="gamma">γ (Member Weight Factor)</label>
+              <input type="number" id="gamma" step="0.01" min="0" placeholder="e.g., 50.0" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Update Parameters</button>
+        </form>
+      </div>
+
+      <!-- Current Scoring Parameters -->
+      <div class="card">
+        <h2 style="margin-top: 0; margin-bottom: 20px;">Scoring Parameters by Product</h2>
+        <p class="info-text">Each product can have custom parameters, or use the global default if not set.</p>
+        <div id="currentParams" class="params-display">
+          <div class="loading">Loading parameters...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="messageBox" class="message-box"></div>
+
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

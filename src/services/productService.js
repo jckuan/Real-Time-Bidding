@@ -167,6 +167,23 @@ class ProductService {
       throw new AppError('Failed to end sale', 500);
     }
   }
+
+  // Get all scoring parameters
+  async getAllScoringParameters() {
+    try {
+      const result = await query(
+        `SELECT * FROM scoring_parameters 
+         WHERE is_active = true 
+         ORDER BY product_id NULLS FIRST`,
+        []
+      );
+
+      return result.rows;
+    } catch (error) {
+      logger.error('Get scoring parameters error', { error: error.message });
+      throw new AppError('Failed to fetch scoring parameters', 500);
+    }
+  }
 }
 
 module.exports = new ProductService();
