@@ -119,58 +119,39 @@
 
 ---
 
-## Phase 5: Cloud Deployment & Scalability
+## Phase 5: Cloud Deployment & Scalability ✅ COMPLETE
 
-**Goal:** Deploy to the cloud and configure auto-scaling for the "Thundering Herd."
+**AWS Infrastructure:**
+- ECS Fargate (rtb-cluster): 4-10 tasks with auto-scaling
+- RDS PostgreSQL 15.8 (db.t3.small): ~225 connections
+- ElastiCache Redis 7.0: Sorted Sets for leaderboards
+- Application Load Balancer: rtb-alb-1080675720.us-west-2.elb.amazonaws.com
+- VPC endpoints for secure AWS service connectivity
 
-### 5.1 Containerization
-
-- Finalize Dockerfile for backend services and frontend (if separate)
-- Ensure images are optimized and lightweight
-
-### 5.2 Cloud Environment Setup (AWS/GCP)
-
-- Provision a Managed Kubernetes Cluster (EKS/GKE) OR Container Service (ECS/Cloud Run)
-- Set up a managed Database (RDS/Cloud SQL) and Redis (ElastiCache/Memorystore)
-
-### 5.3 Scalability Configuration
-
-- **Horizontal Pod Autoscaling (HPA):** Configure rules to scale CPU/Memory usage (e.g., scale out when CPU > 70%)
-- **Load Balancing:** Configure the Application Load Balancer (ALB/Ingress) to distribute traffic
+**Auto-Scaling Configuration:**
+- Policy: CPU-based target tracking (70% target)
+- Min: 4 tasks, Max: 10 tasks
+- Cooldown: 60 seconds (scale-out/scale-in)
 
 ---
 
-## Phase 6: Testing, Optimization & Final Deliverables
+## Phase 6: Testing, Optimization & Final Deliverables ✅ COMPLETE
 
-**Goal:** Prove the system works under pressure and prepare presentation materials.
+**Stress Testing Results:**
+- **Validation (100 users):** 99% success rate, 2,020 successful bids
+- **Thundering Herd (1000 users):** 99% bid success (4,583/4,592), 6.5% error rate
+- **Auto-scaling impact:** Error rate reduced from 15-20% to 6.5% (>50% improvement)
 
-### 6.1 Stress Testing (The "Thundering Herd")
+**Key Achievements:**
+- Zero overselling (orders ≤ max_winners verified)
+- Sub-300ms bid latency at peak load
+- Automatic capacity scaling during traffic spikes
+- Real-time leaderboard updates (2-second broadcasts)
 
-- **Tooling:** Write scripts using JMeter, Locust, or k6
-- **Scenario 1:** 1000+ concurrent users logging in and bidding simultaneously
-- **Scenario 2:** Exponential growth of "Update Bid" requests as the deadline approaches
+**Demo Materials:**
+- 3-minute recording timeline with narration
+- Automated preparation scripts
+- CloudWatch dashboard for live metrics
+- Consistency verification queries
 
-### 6.2 Consistency Verification
-
-- Run a test where Total Bids >> Inventory ($K$)
-- Verify SQL database records after the event: `Count(Sold Items) <= K`
-
-### 6.3 Performance Tuning
-
-- Analyze bottlenecks (CPU spikes, DB locks)
-- Tune Redis persistence and connection pooling settings
-
-### 6.4 Demo Preparation
-
-#### Video Recording (3 mins):
-1. System startup & Config
-2. User flow (Login → Bid → Rank change)
-3. Load Test visualization (Split screen: Load tool vs. System Dashboards)
-4. Cloud Auto-scaling (Show Pods increasing count)
-5. Final Consistency Check (Database query result)
-
-#### Presentation Slides (10-15 pages):
-- Architecture Diagram
-- The formula & data flow
-- Consistency strategy (How you avoided over-selling)
-- Stress test graphs (Response time vs. Load)
+See `docs/auto-scaling-improvements.md` for detailed analysis.

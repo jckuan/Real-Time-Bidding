@@ -43,6 +43,33 @@ This guide walks you through deploying the Real-Time Bidding system to AWS using
 
 ## Architecture
 
+### AWS Services Used
+
+**Compute & Container:**
+- **Amazon ECR**: Docker image registry (746581495218.dkr.ecr.us-west-2.amazonaws.com/rtb-app)
+- **Amazon ECS Fargate**: Serverless container orchestration (rtb-cluster/rtb-service)
+  - CPU: 1024 units, Memory: 2048 MB per task
+  - Auto-scaling: 4-10 tasks, 70% CPU target
+
+**Networking:**
+- **Application Load Balancer**: rtb-alb-1080675720.us-west-2.elb.amazonaws.com
+- **VPC**: Default VPC (vpc-0449dd4efd076077e)
+- **Security Group**: sg-0f45b30eeb2ea2d09
+- **VPC Endpoints**: ECR API/DKR, S3, Secrets Manager
+
+**Database & Cache:**
+- **RDS PostgreSQL 15.8**: db.t3.small, ~225 max connections
+- **ElastiCache Redis 7.0**: cache.t3.micro
+
+**Security:**
+- **AWS Secrets Manager**: Database credentials, JWT secrets
+- **IAM Roles**: RTB-ecsTaskExecutionRole, RTB-ecsTaskRole (see `aws/iam/IAM-SETUP.md` for details)
+
+**Monitoring:**
+- **CloudWatch Logs**: /ecs/rtb-app (7-day retention)
+
+### Architecture Diagram
+
 ```
 Internet
     │
@@ -434,6 +461,43 @@ aws cloudwatch get-metric-statistics \
 ```
 
 ## Troubleshooting
+
+### Common Deployment Issues (FIXED)
+
+**1. PostgreSQL SSL Connection Error**
+```
+Error: no pg_hba.conf entry for host, no encryption
+```
+**Fix:** RDS requires SSL. Ensure `src/database/postgres.js` has:
+```javascript
+ssl: process.env.NODE_ENV === 'production' ? {
+  rejectUnauthorized: false // RDS uses self-signed certs
+} : false
+```
+
+**2. Security Group Configuration**
+Missing inbound rules prevent ECS tasks from working. Required rules:
+```bash
+# Port 443: ECS → VPC Endpoints (ECR, Secrets Manager)
+# Port 80: Internet → ALB
+# Port 3000: ALB → ECS tasks
+```
+
+**3. Docker Platform Mismatch**
+```
+Error: exec format error
+```
+**Fix:** Build for linux/amd64 (Fargate requirement):
+```bash
+docker buildx build --platform linux/amd64 -t app .
+```
+
+**4. VPC Endpoints Required**
+Without NAT Gateway, tasks can't pull images. Create VPC endpoints for:
+- `com.amazonaws.us-west-2.ecr.api`
+- `com.amazonaws.us-west-2.ecr.dkr`
+- `com.amazonaws.us-west-2.s3` (Gateway)
+- `com.amazonaws.us-west-2.secretsmanager`
 
 ### Service won't start
 ```bash
