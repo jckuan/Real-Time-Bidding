@@ -2,8 +2,8 @@
   "family": "rtb-app",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "512",
-  "memory": "1024",
+  "cpu": "1024",
+  "memory": "2048",
   "executionRoleArn": "arn:aws:iam::746581495218:role/RTB-ecsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::746581495218:role/RTB-ecsTaskRole",
   "containerDefinitions": [
@@ -69,6 +69,14 @@
         {
           "name": "CORS_ORIGIN",
           "value": "*"
+        },
+        {
+          "name": "DB_POOL_MIN",
+          "value": "5"
+        },
+        {
+          "name": "DB_POOL_MAX",
+          "value": "30"
         }
       ],
       "secrets": [
@@ -96,9 +104,9 @@
       "healthCheck": {
         "command": ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""],
         "interval": 30,
-        "timeout": 5,
+        "timeout": 10,
         "retries": 3,
-        "startPeriod": 60
+        "startPeriod": 120
       }
     }
   ]
