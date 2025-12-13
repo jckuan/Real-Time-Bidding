@@ -28,10 +28,11 @@ export const options = {
       executor: 'ramping-vus',
       startVUs: 10,
       stages: [
-        { duration: '30s', target: 20 },   // Gradual increase
-        { duration: '30s', target: 50 },   // Accelerating
-        { duration: '30s', target: 150 },  // Rapid spike (deadline approaching)
-        { duration: '20s', target: 200 },  // Peak panic
+        { duration: '1m', target: 25 },   // 2.5x growth
+        { duration: '1m', target: 60 },   // 2.4x growth
+        { duration: '1m', target: 150 },  // 2.5x growth
+        { duration: '1m', target: 400 },  // 2.67x growth (deadline approaching)
+        { duration: '1m', target: 1000 }, // 2.5x growth (peak panic)
         { duration: '10s', target: 0 },    // Cutoff
       ],
       startTime: '35s', // Start after initial bids
@@ -39,9 +40,9 @@ export const options = {
     },
   },
   thresholds: {
-    http_req_duration: ['p(99)<5000'],         // 99% under 5s even during spike
-    bid_update_success: ['rate>0.6'],          // At least 60% updates succeed
-    redis_leaderboard_latency: ['p(95)<500'],  // Redis stays fast
+    http_req_duration: ['p(99)<8000'],         // 99% under 8s even during spike
+    bid_update_success: ['rate>0.5'],          // At least 50% updates succeed
+    redis_leaderboard_latency: ['p(95)<1000'], // Redis stays fast
   },
 };
 
@@ -187,8 +188,8 @@ export function setup() {
   console.log(`API Endpoint: ${API_BASE}`);
   console.log(`Product ID: ${PRODUCT_ID}`);
   console.log('Phase 1: 50 users submit initial bids (30s)');
-  console.log('Phase 2: Exponential update spike (2 min)');
-  console.log('Peak: 200 concurrent updates');
+  console.log('Phase 2: Exponential update spike (2.5 min)');
+  console.log('Peak: 1000 concurrent updates');
   console.log('===========================================');
 }
 

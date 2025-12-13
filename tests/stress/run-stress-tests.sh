@@ -54,9 +54,9 @@ create_test_product() {
     exit 1
   fi
   
-  # Create product with 1-hour sale window
+  # Create product with 6-minute sale window (for scenario 1)
   START_TIME=$(date -u -v+5S +"%Y-%m-%dT%H:%M:%SZ") # Start in 5 seconds
-  END_TIME=$(date -u -v+1H +"%Y-%m-%dT%H:%M:%SZ")   # End in 1 hour
+  END_TIME=$(date -u -v+6M +"%Y-%m-%dT%H:%M:%SZ")   # End in 6 minutes
   
   PRODUCT_RESPONSE=$(curl -s -X POST "$API_BASE/admin/products" \
     -H "Content-Type: application/json" \
