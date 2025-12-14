@@ -22,7 +22,7 @@ This project has been consolidated to essential documentation only. Below is a g
 
 ### `/docs/auto-scaling-improvements.md`
 **Detailed auto-scaling analysis**
-- Before/after comparison (15-20% error → 6.5%)
+- Before/after comparison
 - Auto-scaling configuration (4-10 tasks, 70% CPU)
 - Observed behavior during load tests
 - Bottlenecks identified and future optimizations
