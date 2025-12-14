@@ -6,7 +6,7 @@
 set -e
 
 REGION="us-west-2"
-ECR_REPO="746581495218.dkr.ecr.us-west-2.amazonaws.com/rtb-app"
+ECR_REPO="YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com/rtb-app"
 
 echo "=========================================="
 echo "Deploying Connection Timeout Fix"

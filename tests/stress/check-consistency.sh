@@ -11,7 +11,7 @@ echo "======================================"
 echo ""
 
 # RDS connection details
-DB_HOST="rtb-db.cxs8mgm8ufcp.us-west-2.rds.amazonaws.com"
+DB_HOST="YOUR_RDS_ENDPOINT"
 DB_USER="admin_user"
 DB_NAME="rtb_database"
 

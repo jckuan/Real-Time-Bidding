@@ -111,7 +111,7 @@ The Real-Time Bidding & Flash Sale System is designed to handle high-concurrency
 - Memory: 2 GB
 - Max connections: ~225
 - Multi-AZ: Enabled
-- Endpoint: rtb-db.cxs8mgm8ufcp.us-west-2.rds.amazonaws.com:5432
+- Endpoint: YOUR_RDS_ENDPOINT:5432
 - Database: rtb_database
 - SSL: Enabled (self-signed cert)
 
@@ -119,11 +119,11 @@ The Real-Time Bidding & Flash Sale System is designed to handle high-concurrency
 - Cluster: `rtb-redis`
 - Engine: Redis 7.0
 - Node type: cache.t3.micro
-- Endpoint: rtb-redis.laocea.0001.usw2.cache.amazonaws.com:6379
+- Endpoint: YOUR_REDIS_ENDPOINT:6379
 
 **Application Load Balancer:**
 - Name: `rtb-alb`
-- DNS: rtb-alb-1080675720.us-west-2.elb.amazonaws.com
+- DNS: YOUR_ALB_DNS
 - Idle timeout: 120s
 - Session stickiness: Enabled (24 hours)
 - Target group: Health checks optimized
@@ -152,7 +152,7 @@ The Real-Time Bidding & Flash Sale System is designed to handle high-concurrency
 
 **Current Configuration:**
 - Name: `rtb-alb`
-- DNS: rtb-alb-1080675720.us-west-2.elb.amazonaws.com
+- DNS: YOUR_ALB_DNS
 - Scheme: Internet-facing
 - Idle timeout: 120 seconds (increased for WebSocket)
 - Session stickiness: Enabled (24-hour duration)
@@ -194,7 +194,7 @@ HealthCheck:
 - Current tasks: 4 (can scale to 10+)
 - CPU: 1024 units (1 vCPU) per task
 - Memory: 2048 MB (2 GB) per task
-- Image: jckuan/rtb-system:latest (ECR)
+- Image: rtb-system:latest (ECR)
 
 **Responsibilities:**
 - Handle authentication (JWT)
@@ -379,7 +379,7 @@ LIMIT 50
 **Engine:** Redis 7.0
 **Configuration:**
 - Memory: ~0.5 GB
-- Endpoint: rtb-redis.laocea.0001.usw2.cache.amazonaws.com:6379
+- Endpoint: YOUR_REDIS_ENDPOINT:6379
 - Cluster mode: Disabled (single node)
 - Encryption: In-transit enabled
 

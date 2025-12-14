@@ -12,7 +12,7 @@ const bidLatency = new Trend('bid_latency');
 const bidCount = new Counter('bid_success_count');
 
 // Configuration
-const BASE_URL = __ENV.API_BASE_URL || 'http://rtb-alb-1080675720.us-west-2.elb.amazonaws.com/api/v1';
+const BASE_URL = __ENV.API_BASE_URL || 'http://YOUR_ALB_DNS/api/v1';
 const PRODUCT_ID = __ENV.PRODUCT_ID;
 
 // Demo-friendly staged ramp for clean video recording

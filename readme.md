@@ -1,156 +1,135 @@
 # Real-Time Bidding & Flash Sale System
 
-## Project Overview
+# A. Project Summary
 
-**Objective:** Design and implement a cloud-based backend system capable of handling "Thundering Herd" traffic for a mixed "Dynamic Bidding" and "Flash Sale" e-commerce event.
+### **Objectives & Challenges**
 
-**Core Challenge:** Ensure data consistency (no over-selling), real-time leaderboard updates, and high availability under high concurrency.
+The goal for the project is to design a cloud-based backend system capable of handling ***"Thundering Herd"*** traffic for a mixed **dynamic bidding** and **flash sale** e-commerce event.
 
----
+The system was built to withstand **massive concurrency**, where thousands of users bid instantly, while adhering to strict requirements for **data consistency** (to prevent over-selling) and **high availability**. Additionally, the system meets the requirement for real-time leaderboard updates in sub-seconds.
 
-## Phase 1: Architecture Design & Technical Strategy
+### **Scoring Methodology**
 
-**Goal:** Define the system blueprint, select the technology stack, and plan for scalability.
+To manage the bidding, the system implements a specific scoring formula:
 
-### 1.1 Requirements Analysis
+$$
+\text{Score} = \alpha \cdot P + \frac{\beta}{T+1} + \gamma \cdot W
+$$
 
-- Analyze the scoring formula: 
-  
-  $$Score = \alpha \cdot P + \frac{\beta}{T+1} + \gamma \cdot W$$
+The parameters $P, T, W$ are configurable by the system administrator for individual products.
 
-- Define the interaction flow between:
-  - Price ($P$)
-  - Reaction Time ($T$)
-  - Member Weight ($W$)
+- $P$ (Price): The bid amount submitted by the user.
+- $T$ (Time): The reaction speed of the user. (`bidTime - saleStartTime`)
+- $W$ (Weight): The member weight or contribution level.
 
-### 1.2 Technology Stack Selection
+### Status & Key Performance Metrics
 
-- **Backend:** Select a high-performance language (e.g., Go, Node.js, or Java Spring Boot)
-- **Database:**
-  - **Persistent Store:** Relational DB (PostgreSQL/MySQL) for user data and final orders
-  - **In-Memory Store:** Redis for real-time leaderboards (Sorted Sets), caching, and session management
-- **Message Queue (Optional but recommended):** Kafka or RabbitMQ for buffering write requests if using an asynchronous write-behind strategy
+All 6 phases of the project as shown in `readme.md` have been completed. Stress testing verified the following performance statistics:
 
-### 1.3 Database Schema Design
+- **Throughput:** Achieved a **99% bid success rate** (4,368/4,372 successful bids) during "Thundering Herd" simulations with 1,000 concurrent users.
+- **Reliability:** Auto-scaling reduced the request failure rate from 61% down to 4%.
+- **Speed & Consistency:** Maintained sub-300ms bid latency at peak load with zero over-selling verified (orders did not exceed the maximum number of winners).
 
-- Design schemas for Users, Products, Bids, and Orders
-- **Critical:** Design the inventory locking mechanism to prevent over-selling (e.g., Optimistic Locking or Redis Lua scripts)
+# B. System Architecture & Design
 
-### 1.4 API Contract Definition
+### High-Level Design
 
-- Define RESTful or gRPC endpoints for Login, Bidding, and Admin actions
-- Define WebSocket/SSE protocols for the real-time leaderboard
+The system uses a cloud-native 3-tier architecture deployed on AWS, designed for high availability and horizontal scalability.
 
----
+- **Client Layer:** Handles client-side interactions by establishing connections over HTTP/HTTPS and WSS for real-time communication.
+- **Load Balancing:** An **AWS Application Load Balancer (ALB)** distributes incoming traffic to healthy containers. It manages SSL termination and uses "sticky sessions" to maintain persistent WebSocket connections.
+- **Application Layer:** Hosted on **Amazon ECS Fargate**, running stateless Node.js containers that handle both REST API requests and Socket.IO real-time events. This layer auto-scales between 4 and 10 tasks based on CPU load.
+- **Data & Cache Layer:**
+    - **Amazon RDS (PostgreSQL 15.10):** Acts as the primary **persistent store**, managing user data, products, and final orders with ACID compliance.
+    - **Amazon ElastiCache (Redis 7.0):** Provides high-performance caching and powers the real-time leaderboard using Sorted Sets (ZSET).
 
-## Phase 2: Core Infrastructure & Basic Modules
+### Design Rationale
 
-**Goal:** Set up the development environment and implement non-critical support systems.
+- **PostgreSQL vs. NoSQL:** PostgreSQL was selected to ensure strict data consistency and transactional integrity during the critical "order finalization" phase, which is essential for preventing inventory errors.
+- **Redis for Leaderboards:** Redis Sorted Sets (ZSET) were chosen over SQL queries for ranking. This allows for sub-millisecond retrieval of the "Top K" winners and real-time rank calculation, which would be performance-prohibitive using standard database `ORDER BY` clauses under high concurrency.
+- **Scoring Parameters:** The system uses a flexible parameter structure (global defaults overridden by product-specific settings) for the scoring formula ($\alpha, \beta, \gamma$). This allows administrators to fine-tune the dynamics of individual flash sales without deploying code changes.
 
-### 2.1 Environment Setup
+### Consistency Models
 
-- Initialize the Git repository
-- Set up local Docker environment (Docker Compose) for the App, Database, and Redis
+- **Optimistic Locking (Redis):** During the active bidding phase, Redis acts as the gatekeeper, tracking tentative winners in real-time using atomic atomic operations.
+- **Atomic Transactions:** When a sale is finalized, the system uses PostgreSQL transactions with row-level locking. It verifies that the count of orders never exceeds `max_winners` before committing, ensuring zero over-selling even if Redis and the database temporarily drift.
 
-### 2.2 Member System Implementation
+# C. Technical Specifications
 
-- Implement Registration and Login APIs
-- **Implement the Logic for Member Weight ($W$):**
-  - Create a mechanism to assign $W$ (random assignment or preset based on mock user tiers)
-  - Store $W$ in the user profile/session for quick access during bidding
+### Tech Stack
 
-### 2.3 Admin Dashboard (Backend)
+- **Backend Runtime:** **Node.js** with Express was selected for its non-blocking I/O model, capable of managing thousands of concurrent WebSocket connections efficiently.
+- **Database:** **PostgreSQL** serves as the source of truth, chosen for its ACID compliance to prevent over-selling and support for robust row-level locking.
+- **In-Memory Store:** **Redis** is utilized for the real-time leaderboard (using Sorted Sets) and atomic operations to ensure sub-millisecond score updates.
+- **Real-Time Transport:** Socket.IO provides the WebSocket layer with automatic fallback mechanisms and room-based broadcasting.
 
-- Implement API to create products and set inventory ($K$)
-- Implement API to configure dynamic parameters ($\alpha$, $\beta$, $\gamma$)
+### Database Schema
 
----
+- `users`: Stores account details and the `member_weight` used in scoring.
+- `products`: Manages inventory with a `max_winners` field to define the cut-off.
+- `bids`: Records every bid attempt with its `calculated_score`. It uses an `is_latest` boolean flag to quickly filter the user's active bid.
+- `orders`: Stores the final confirmed winners.
+- `scoring_parameters`: Holds the dynamic $\alpha, \beta, \gamma$ values, allowing per-product configuration overrides.
 
-## Phase 3: The Bidding Engine (Core Logic)
+### Interface Definitions
 
-**Goal:** Implement the high-concurrency bidding logic and scoring algorithm.
+- Examples of **RESTful API Endpoints**
+    - `POST /auth/login`: Authenticate user and receive JWT token.
+    - `POST /bids`: Submits a new bid.
+    - `PUT /bids/:id`: Updates an existing bid with a higher price.
+    - `POST /admin/products`: Creates a new product/sale event.
+    - `GET /leaderboard/:product_id`: Returns a snapshot of the current Top K standings.
+- **WebSocket Protocol**
+    - `subscribe_leaderboard` (Client → Server): Subscribes a user to updates for a specific product.
+    - `leaderboard_update` (Server → Client): Broadcasts the updated Top K list and threshold score.
 
-### 3.1 Scoring Algorithm Implementation
+# D. AWS Infrastructure & Deployment
 
-- Develop the function to calculate $Score$ based on:
-  - Input $P$ (Price)
-  - Calculated $T$ (time delta)
-  - Retrieved $W$ (Member Weight)
-- Ensure parameters $\alpha$, $\beta$, $\gamma$ can be hot-reloaded or fetched dynamically without restarting the service
+### Infrastructure Configuration
 
-### 3.2 High-Concurrency Bidding API
+The deployment utilizes **AWS ECS Fargate** for serverless container orchestration, configured with **1024 CPU units and 2048 MB memory** per task. A key architectural decision was using **Interface VPC Endpoints** for private connectivity to ECR and Secrets Manager, which eliminates the need for a public NAT Gateway and enhances network isolation.
 
-- Implement the `POST /bid` and `PUT /bid` endpoints
-- **Optimization:** Implement a write-heavy strategy. Instead of hitting the SQL DB immediately:
-  1. Validate the bid
-  2. Calculate the Score
-  3. Update the Redis Sorted Set (ZSET) for the leaderboard
-  4. Push the bid to a queue or persistence layer asynchronously
+### Security & Access Control
 
-### 3.3 Inventory Control & Consistency
+- **Secrets Management:** Database credentials and JWT secrets are never hardcoded; they are injected securely at runtime via **AWS Secrets Manager**.
+- **Network Perimeter:** Security groups enforce strict ingress rules, allowing only Port 80 traffic from the internet to the Load Balancer, while restricting container traffic to internal Port 3000.
 
-- Implement strict inventory checks
-- Define the logic for "Tentative Winners" (Top $K$ in the Redis ZSET)
-- Ensure the final commit (converting a tentative win to an order) checks the database inventory atomically
+### Deployment & Operations
 
----
+- **Deployment Automation:** The `deploy.sh` script automates the provisioning pipeline, including creating ECR repositories and pushing Docker images. A critical requirement is building images explicitly for the `linux/amd64` platform to ensure compatibility with Fargate.
+- **Auto-Scaling Configuration:** The system employs a target tracking scaling policy based on **CPU utilization**. It automatically scales the task count between a minimum of 4 and a maximum of 10 tasks to maintain a target CPU usage of 70%, with a 60-second cooldown period for stability.
+- **Monitoring:** Application and system logs are aggregated in **Amazon CloudWatch Logs** for troubleshooting and performance analysis.
 
-## Phase 4: Real-Time Data & Frontend Integration
+# E. Testing Strategy & Performance Analysis
 
-**Goal:** Visualize the bidding war and ensure users see updates instantly.
+### Testing Methodology
 
-### 4.1 Real-Time Leaderboard Backend
+The project employs **k6** to simulate the "Thundering Herd" phenomenon characteristic of flash sales. The test design replicates a "panic-buy" event by exponentially ramping up traffic in 1-minute intervals: **25 → 60 → 150 → 400 → 1000 concurrent users**. This progression, representing an approximate **2.5x growth factor per stage**, specifically tests the system's ability to handle massive viral growth.
 
-- Implement a WebSocket or Server-Sent Events (SSE) service
-- Create a periodic or event-driven broadcaster that fetches the Top $K$ users, highest bid, and entry threshold score from Redis
-- **Constraint Check:** Ensure the broadcast is efficient and doesn't crash under 1000+ connections
+### Performance Metrics
 
-### 4.2 Frontend Development (Minimal/Functional)
+- **Throughput:** The volume of successful bid submissions (`bid_success_rate`) is tracked to measure the system's processing capacity during the sale window.
+- **Latency:** Response times (`bid_latency`) are tracked to ensure the system remains responsive during peak traffic.
+- **Error Rate:** The system monitors the ratio of failed requests (`http_req_failed`) to ensure reliability does not degrade significantly under stress.
 
-- **Login Page:** Simple entry point
-- **Bidding Interface:**
-  - Display Item Info
-  - Input field for Price ($P$)
-  - "Submit Bid" and "Update Bid" buttons
-- **Live Dashboard:**
-  - Display the "Tentative Winners" list (Top $K$)
-  - Display current User Rank and Score
-  - Refresh data automatically via WebSocket/SSE
+### Test Results
 
----
+- **Bid Success:** Achieved a **99.91% success rate**, processing 4,368 successful bids out of 4,372 attempts.
+- **Latency:** Maintained a **p(95) bid latency of 229ms**, ensuring sub-second response times for bid processing.
+- **Reliability:** The final error rate was recorded at **3.72%**, a significant improvement driven by auto-scaling which reduced errors from an initial 61.37% baseline.
 
-## Phase 5: Cloud Deployment & Scalability ✅ COMPLETE
+![▲ Screenshot of terminal after running stress test](media/Screenshot_2025-12-13_at_1.40.59_PM.png)
 
-**AWS Infrastructure:**
-- ECS Fargate (rtb-cluster): 4-10 tasks with auto-scaling
-- RDS PostgreSQL 15.8 (db.t3.small): ~225 connections
-- ElastiCache Redis 7.0: Sorted Sets for leaderboards
-- Application Load Balancer: rtb-alb-1080675720.us-west-2.elb.amazonaws.com
-- VPC endpoints for secure AWS service connectivity
+▲ Screenshot of terminal after running stress test
 
-**Auto-Scaling Configuration:**
-- Policy: CPU-based target tracking (70% target)
-- Min: 4 tasks, Max: 10 tasks
-- Cooldown: 60 seconds (scale-out/scale-in)
+![▲ AWS CloudWatch dashboard during the stress test](media/Screenshot_2025-12-13_at_1.54.40_PM.png)
 
----
+▲ AWS CloudWatch dashboard during the stress test
 
-## Phase 6: Testing, Optimization & Final Deliverables ✅ COMPLETE
+![▲ Monitoring utilization metrics of ECS tasks](media/Screenshot_2025-12-13_at_2.06.05_PM.png)
 
-**Stress Testing Results:**
-- **Thundering Herd (1000 users):** 99% bid success (4,368/4,372)
-- **Auto-scaling impact:** Request failure rate reduced from 61.37% to 3.72%
+▲ Monitoring utilization metrics of ECS tasks
 
-**Key Achievements:**
-- Zero overselling (orders ≤ max_winners verified)
-- Sub-300ms bid latency at peak load
-- Automatic capacity scaling during traffic spikes
-- Real-time leaderboard updates (2-second broadcasts)
+# F. Demo
 
-**Demo Materials:**
-- 3-minute recording timeline with narration
-- Automated preparation scripts
-- CloudWatch dashboard for live metrics
-- Consistency verification queries
-
-See `docs/auto-scaling-improvements.md` for detailed analysis.
+https://drive.google.com/drive/folders/1nYEOJGEWsR7wYdtVjgIwOaXZMEs1K2wE?usp=drive_link

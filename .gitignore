@@ -7,6 +7,22 @@ target/
 .env
 .env.local
 .env.*.local
+.env.production
+
+# Sensitive files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# AWS credentials
+.aws/
+aws-credentials.txt
+
+# Secrets
+secrets/
+*.secret
 
 # IDE
 .vscode/
@@ -40,3 +56,6 @@ tests/stress/stress-results/
 # Temporary files
 tmp/
 temp/
+
+# Documents
+*.pdf

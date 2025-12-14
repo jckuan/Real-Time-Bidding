@@ -3,7 +3,7 @@
 # AWS Phase 4 Test - Populate database with test data
 # Points to AWS ALB endpoint
 
-API_BASE="http://rtb-alb-1080675720.us-west-2.elb.amazonaws.com/api/v1"
+API_BASE="http://YOUR_ALB_DNS/api/v1"
 
 # Colors
 GREEN='\033[0;32m'

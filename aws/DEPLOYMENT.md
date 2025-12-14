@@ -46,15 +46,15 @@ This guide walks you through deploying the Real-Time Bidding system to AWS using
 ### AWS Services Used
 
 **Compute & Container:**
-- **Amazon ECR**: Docker image registry (746581495218.dkr.ecr.us-west-2.amazonaws.com/rtb-app)
+- **Amazon ECR**: Docker image registry (YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com/rtb-app)
 - **Amazon ECS Fargate**: Serverless container orchestration (rtb-cluster/rtb-service)
   - CPU: 1024 units, Memory: 2048 MB per task
   - Auto-scaling: 4-10 tasks, 70% CPU target
 
 **Networking:**
-- **Application Load Balancer**: rtb-alb-1080675720.us-west-2.elb.amazonaws.com
-- **VPC**: Default VPC (vpc-0449dd4efd076077e)
-- **Security Group**: sg-0f45b30eeb2ea2d09
+- **Application Load Balancer**: YOUR_ALB_DNS
+- **VPC**: Default VPC (vpc-XXXXXXXXXXXXXXXXX)
+- **Security Group**: sg-XXXXXXXXXXXXXXXXX
 - **VPC Endpoints**: ECR API/DKR, S3, Secrets Manager
 
 **Database & Cache:**

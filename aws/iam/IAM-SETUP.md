@@ -16,7 +16,7 @@ This directory contains IAM role configurations for the Real-Time Bidding ECS de
 Run the automated script:
 
 ```bash
-cd /Users/jckuan/Dev/Real-Time-Bidding
+cd Real-Time-Bidding
 ./aws/iam/setup-roles.sh
 ```
 

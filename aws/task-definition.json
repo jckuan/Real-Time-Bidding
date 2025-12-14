@@ -4,12 +4,12 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "2048",
-  "executionRoleArn": "arn:aws:iam::746581495218:role/RTB-ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::746581495218:role/RTB-ecsTaskRole",
+  "executionRoleArn": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/RTB-ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/RTB-ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "rtb-app",
-      "image": "746581495218.dkr.ecr.us-west-2.amazonaws.com/rtb-app:latest",
+      "image": "YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com/rtb-app:latest",
       "portMappings": [
         {
           "containerPort": 3000,
@@ -28,7 +28,7 @@
         },
         {
           "name": "DB_HOST",
-          "value": "rtb-db.cxs8mgm8ufcp.us-west-2.rds.amazonaws.com"
+          "value": "YOUR_RDS_ENDPOINT"
         },
         {
           "name": "DB_PORT",
@@ -40,7 +40,7 @@
         },
         {
           "name": "REDIS_HOST",
-          "value": "rtb-redis.laocea.0001.usw2.cache.amazonaws.com"
+          "value": "YOUR_REDIS_ENDPOINT"
         },
         {
           "name": "REDIS_PORT",
@@ -82,15 +82,15 @@
       "secrets": [
         {
           "name": "DB_USER",
-          "valueFrom": "arn:aws:secretsmanager:us-west-2:746581495218:secret:rtb/db/username-RLFED2"
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:YOUR_AWS_ACCOUNT_ID:secret:rtb/db/username-XXXXXX"
         },
         {
           "name": "DB_PASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:us-west-2:746581495218:secret:rtb/db/password-lnR4Vu"
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:YOUR_AWS_ACCOUNT_ID:secret:rtb/db/password-XXXXXX"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-west-2:746581495218:secret:rtb/jwt/secret-1ruGX2"
+          "valueFrom": "arn:aws:secretsmanager:us-west-2:YOUR_AWS_ACCOUNT_ID:secret:rtb/jwt/secret-XXXXXX"
         }
       ],
       "logConfiguration": {

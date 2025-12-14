@@ -88,7 +88,7 @@ The frontend is automatically served by the backend server:
 
 ```bash
 # Start the backend server
-cd /Users/jckuan/Dev/Real-Time-Bidding
+cd Real-Time-Bidding
 node src/server.js
 ```
 

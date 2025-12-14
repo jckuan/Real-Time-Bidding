@@ -17,7 +17,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # Configuration
-ALB_URL="http://rtb-alb-1080675720.us-west-2.elb.amazonaws.com"
+ALB_URL="http://YOUR_ALB_DNS"
 API_URL="${ALB_URL}/api/v1"
 
 echo -e "${BLUE}Step 1: Verify AWS Services${NC}"

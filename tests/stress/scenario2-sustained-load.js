@@ -12,7 +12,7 @@ const leaderboardLatency = new Trend('leaderboard_latency');
 const bidUpdateLatency = new Trend('bid_update_latency');
 
 // Configuration
-const API_BASE = __ENV.API_BASE || 'http://rtb-alb-1080675720.us-west-2.elb.amazonaws.com/api/v1';
+const API_BASE = __ENV.API_BASE || 'http://YOUR_ALB_DNS/api/v1';
 const PRODUCT_ID = __ENV.PRODUCT_ID || '1';
 
 export const options = {

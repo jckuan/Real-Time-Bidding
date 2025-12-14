@@ -5,7 +5,7 @@
 ### Compute & Container Services
 1. **Amazon ECR (Elastic Container Registry)**
    - Stores Docker images
-   - Repository: `746581495218.dkr.ecr.us-west-2.amazonaws.com/rtb-app`
+   - Repository: `YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-west-2.amazonaws.com/rtb-app`
    - Image scanning enabled for security
 
 2. **Amazon ECS (Elastic Container Service) with Fargate**
@@ -18,15 +18,15 @@
 ### Networking & Load Balancing
 3. **Application Load Balancer (ALB)**
    - Name: `rtb-alb`
-   - DNS: `rtb-alb-1080675720.us-west-2.elb.amazonaws.com`
+   - DNS: `YOUR_ALB_DNS`
    - Distributes HTTP traffic (port 80) to ECS tasks (port 3000)
    - Target Group: `rtb-targets`
    - Health checks: `/health` endpoint
 
 4. **Amazon VPC (Virtual Private Cloud)**
-   - VPC ID: `vpc-0449dd4efd076077e` (default VPC)
+   - VPC ID: `vpc-XXXXXXXXXXXXXXXXX` (default VPC)
    - Subnets: `subnet-06160b4d3e6bd1629`, `subnet-01685448c8b5069dc`
-   - Security Group: `sg-0f45b30eeb2ea2d09`
+   - Security Group: `sg-XXXXXXXXXXXXXXXXX`
 
 5. **VPC Endpoints (Interface & Gateway)**
    - ECR API Endpoint (com.amazonaws.us-west-2.ecr.api)
@@ -41,14 +41,14 @@
    - Engine: PostgreSQL 15.8
    - Instance Class: db.t3.micro
    - Database Name: `rtb_database`
-   - Endpoint: `rtb-db.cxs8mgm8ufcp.us-west-2.rds.amazonaws.com:5432`
+   - Endpoint: `YOUR_RDS_ENDPOINT:5432`
    - Storage: 20GB gp3, encrypted
 
 7. **Amazon ElastiCache Redis**
    - Cluster: `rtb-redis`
    - Engine: Redis 7.0
    - Node Type: cache.t3.micro
-   - Endpoint: `rtb-redis.laocea.0001.usw2.cache.amazonaws.com:6379`
+   - Endpoint: `YOUR_REDIS_ENDPOINT:6379`
    - Purpose: Real-time leaderboards (Sorted Sets), session management
 
 ### Security & Secrets Management
@@ -83,7 +83,7 @@
                     ┌──────────────────────────────┐
                     │  Application Load Balancer   │
                     │      (rtb-alb)               │
-                    │  rtb-alb-1080675720...       │
+                    │  YOUR_ALB_DNS              │
                     │                              │
                     │  Target Group: rtb-targets   │
                     └──────────────┬───────────────┘
@@ -91,9 +91,9 @@
                                    │ Port 3000
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    VPC (vpc-0449dd4efd076077e)                          │
+│                    VPC (vpc-XXXXXXXXXXXXXXXXX)                          │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │            Security Group (sg-0f45b30eeb2ea2d09)                │    │
+│  │            Security Group (sg-XXXXXXXXXXXXXXXXX)                │    │
 │  │  Rules:                                                         │    │
 │  │    • Port 80 from 0.0.0.0/0 (ALB ← Internet)                    │    │
 │  │    • Port 443 from same SG (ECS → VPC Endpoints)                │    │
