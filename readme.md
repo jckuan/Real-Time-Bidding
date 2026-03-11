@@ -51,7 +51,7 @@ The system uses a cloud-native 3-tier architecture deployed on AWS, designed for
 
 ### Consistency Models
 
-- **Optimistic Locking (Redis):** During the active bidding phase, Redis acts as the gatekeeper, tracking tentative winners in real-time using atomic atomic operations.
+- **Optimistic Locking (Redis):** During the active bidding phase, Redis acts as the gatekeeper, tracking tentative winners in real-time using atomic operations.
 - **Atomic Transactions:** When a sale is finalized, the system uses PostgreSQL transactions with row-level locking. It verifies that the count of orders never exceeds `max_winners` before committing, ensuring zero over-selling even if Redis and the database temporarily drift.
 
 # C. Technical Specifications
